@@ -1,0 +1,174 @@
+openapi: 3.0.3
+info:
+  title: API de Pedidos
+  description: API REST simples para criação e consulta de pedidos de um e-commerce (CP5 - Arquitetura Orientada a Serviço).
+  version: 1.0.0
+servers:
+  - url: http://localhost:3000
+    description: Ambiente local
+
+paths:
+  /pedidos:
+    post:
+      summary: Cria um novo pedido
+      operationId: criarPedido
+      tags: [Pedidos]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NovoPedido'
+            example:
+              cliente: Maria Silva
+              descricao: Notebook Dell Inspiron 15
+              valor: 4500.90
+      responses:
+        '201':
+          description: Pedido criado com sucesso
+          headers:
+            Location:
+              description: URI do pedido criado
+              schema:
+                type: string
+                example: /pedidos/3f2b8c1e-6a4d-4e2f-9b7a-1c2d3e4f5a6b
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Pedido'
+              example:
+                id: 3f2b8c1e-6a4d-4e2f-9b7a-1c2d3e4f5a6b
+                cliente: Maria Silva
+                descricao: Notebook Dell Inspiron 15
+                valor: 4500.90
+                status: CRIADO
+                criadoEm: '2026-10-21T22:10:00.000Z'
+        '400':
+          description: Dados inválidos ou JSON malformado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+              example:
+                erro: Dados do pedido inválidos
+                detalhes:
+                  - cliente é obrigatório e deve ser texto
+                  - valor é obrigatório e deve ser um número maior que zero
+                requestId: 7c9e6679-7425-40de-944b-e07fc1f90ae7
+        '500':
+          $ref: '#/components/responses/ErroInterno'
+
+  /pedidos/{id}:
+    get:
+      summary: Consulta um pedido pelo identificador
+      operationId: buscarPedido
+      tags: [Pedidos]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Identificador único (UUID) do pedido
+          schema:
+            type: string
+          example: 3f2b8c1e-6a4d-4e2f-9b7a-1c2d3e4f5a6b
+      responses:
+        '200':
+          description: Pedido encontrado
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/X-Request-Id'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Pedido'
+              example:
+                id: 3f2b8c1e-6a4d-4e2f-9b7a-1c2d3e4f5a6b
+                cliente: Maria Silva
+                descricao: Notebook Dell Inspiron 15
+                valor: 4500.90
+                status: CRIADO
+                criadoEm: '2026-10-21T22:10:00.000Z'
+        '404':
+          description: Pedido não encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+              example:
+                erro: Pedido não encontrado
+                requestId: 7c9e6679-7425-40de-944b-e07fc1f90ae7
+        '500':
+          $ref: '#/components/responses/ErroInterno'
+
+components:
+  headers:
+    X-Request-Id:
+      description: Identificador da requisição (gerado pela API ou reaproveitado do cliente), também presente nos logs
+      schema:
+        type: string
+
+  schemas:
+    NovoPedido:
+      type: object
+      required: [cliente, descricao, valor]
+      properties:
+        cliente:
+          type: string
+          description: Nome ou identificação do cliente
+          example: Maria Silva
+        descricao:
+          type: string
+          description: Descrição do pedido
+          example: Notebook Dell Inspiron 15
+        valor:
+          type: number
+          format: double
+          minimum: 0
+          exclusiveMinimum: true
+          description: Valor do pedido (maior que zero)
+          example: 4500.90
+
+    Pedido:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        cliente:
+          type: string
+        descricao:
+          type: string
+        valor:
+          type: number
+          format: double
+        status:
+          type: string
+          enum: [CRIADO]
+        criadoEm:
+          type: string
+          format: date-time
+
+    Erro:
+      type: object
+      properties:
+        erro:
+          type: string
+        detalhes:
+          type: array
+          items:
+            type: string
+        requestId:
+          type: string
+
+  responses:
+    ErroInterno:
+      description: Erro interno inesperado
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Erro'
+          example:
+            erro: Erro interno do servidor
+            requestId: 7c9e6679-7425-40de-944b-e07fc1f90ae7
