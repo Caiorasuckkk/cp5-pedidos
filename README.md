@@ -8,9 +8,8 @@ API REST para criar e consultar pedidos de um e-commerce.
 
 | Nome | RM |
 |------|----|
-| _Nome do integrante 1_ | _RM00000_ |
-| _Nome do integrante 2_ | _RM00000_ |
-| _Nome do integrante 3_ | _RM00000_ |
+| Caio Rasuck Barbosa | RM93645 |
+| Arthur Albuquerque | RM93025 |
 
 ## Tecnologias
 
